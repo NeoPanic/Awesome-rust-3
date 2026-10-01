@@ -1,0 +1,12 @@
+# lychee configuration for awesome-rust
+# Excludes are regexes — domain-bare patterns cover www/subdomains.
+
+exclude = [
+  # crates.io and docs.rs generally allow automated checks; exclusions below
+  # are only for domains observed to bot-block or flake from CI runners.
+]
+
+# Be lenient with transient failures but strict about real breakage
+max_retries = 2
+timeout = 20
+accept = [200, 201, 202, 203, 204, 206]

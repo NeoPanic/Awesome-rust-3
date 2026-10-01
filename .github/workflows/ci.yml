@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Monthly link-rot check, 1st of each month at 07:00 UTC
+    - cron: "0 7 1 * *"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate JSON catalog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate data/rust.json
+        run: |
+          python - <<'EOF'
+          import json, re, sys
+          from collections import Counter
+          from pathlib import Path
+
+          data = json.loads(Path("data/rust.json").read_text())
+          assert isinstance(data, list) and data, "rust.json must be a non-empty list"
+
+          required = {"name", "description", "license", "category", "repo",
+                      "homepage", "official_site", "stars", "verified",
+                      "unverified_reason"}
+          # URLs legitimately shared by distinct entries (same upstream)
+          SHARED_URLS = {
+              "https://www.rust-lang.org",   # rust-analyzer, clippy (rust-lang org)
+              "https://github.com/tokio-rs/tracing",  # tracing + tracing-subscriber live in one monorepo
+          }
+
+          names, seen_urls, errors = set(), {}, []
+          for i, e in enumerate(data):
+              missing = required - set(e)
+              if missing:
+                  errors.append("[" + str(i) + "] missing keys: " + str(sorted(missing)))
+              name = e.get("name", "")
+              if name in names:
+                  errors.append("[" + str(i) + "] duplicate name: " + repr(name))
+              names.add(name)
+              if not e.get("homepage") or not re.match(r"^https?://", e["homepage"]):
+                  errors.append("[" + str(i) + "] " + repr(name) + ": homepage must be an http(s) URL")
+              entry_urls = {u for k in ("homepage", "repo", "official_site")
+                            if (u := e.get(k))}
+              for u in entry_urls:
+                  if u in seen_urls and u not in SHARED_URLS:
+                      errors.append("[" + str(i) + "] " + repr(name) + ": URL already used by "
+                                    + repr(seen_urls[u]) + ": " + u)
+                  seen_urls.setdefault(u, name)
+              if not e.get("verified") and not e.get("unverified_reason"):
+                  errors.append("[" + str(i) + "] " + repr(name) + ": unverified without unverified_reason")
+              if e.get("verified") and e.get("unverified_reason"):
+                  errors.append("[" + str(i) + "] " + repr(name) + ": verified but has unverified_reason")
+
+          readme = Path("README.md").read_text()
+
+          # Scope the bullet cross-check to the catalog sections
+          start = readme.index("## Web Frameworks")
+          end = readme.index("## Notable exclusions")
+          catalog = readme[start:end]
+
+          # JSON -> README: every entry must have a bullet
+          for e in data:
+              bullet = "[" + e["name"] + "]("
+              if bullet not in catalog:
+                  errors.append("README catalog missing bullet for " + repr(e["name"]))
+
+          # README -> JSON: every catalog bullet must map to an entry
+          for m in re.finditer(r"^- \[([^\]]+)\]\(", catalog, re.M):
+              if m.group(1) not in names:
+                  errors.append("README bullet has no JSON entry: " + repr(m.group(1)))
+
+          # Section counts must match JSON
+          cats = Counter(e["category"] for e in data)
+          for (title, cat) in [
+                  ("Web Frameworks", "web-frameworks"),
+                  ("Async Runtimes & Networking", "async-networking"),
+                  ("Databases & ORMs", "databases"),
+                  ("Serialization", "serialization"),
+                  ("CLI & TUI", "cli-tui"),
+                  ("GUI", "gui"),
+                  ("Game Engines", "game-engines"),
+                  ("WebAssembly", "wasm"),
+                  ("Embedded & no_std", "embedded"),
+                  ("Testing, Benchmarking & Observability", "testing-observability"),
+                  ("Cryptography", "cryptography"),
+                  ("Build Tooling & Developer Experience", "tooling")]:
+              n = cats[cat]
+              if ("## " + title) not in readme:
+                  errors.append("README missing section header: " + repr(title))
+              if ("(" + str(n) + " entries)") not in readme:
+                  errors.append("README count mismatch for " + repr(title) + ": expected " + str(n))
+
+          # TOC anchors must match GitHub's slugger exactly:
+          # lowercase, strip punctuation (keep word chars, hyphens, spaces),
+          # then map EACH whitespace char to one hyphen (re.sub(r"\s", "-"),
+          # NOT \s+ which wrongly collapses). So "&" headings anchor with
+          # double hyphens, e.g. "CLI & TUI" -> #cli--tui.
+          def slug(t):
+              t = re.sub(r"[^\w\s-]", "", t.lower().strip())
+              return re.sub(r"\s", "-", t)
+          toc = readme[readme.index("## Contents"):readme.index("## Choosing the right crate")]
+          headers = re.findall(r"^## (.+)$", readme, re.M)
+          header_slugs = {slug(h) for h in headers}
+          for m in re.finditer(r"\(#[^)]+\)", toc):
+              anchor = m.group(0)[1:-1].lstrip("#")
+              if anchor not in header_slugs:
+                  errors.append("TOC anchor has no matching header: " + m.group(0))
+
+          if errors:
+              print("\n".join(errors))
+              sys.exit(1)
+          print("OK: " + str(len(data)) + " entries, " + str(len(cats)) + " categories, "
+                + str(sum(1 for e in data if e["verified"])) + "/" + str(len(data)) + " verified")
+          EOF
+
+  links:
+    name: Link check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: --config .lychee.toml --verbose --no-progress './**/*.md'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
