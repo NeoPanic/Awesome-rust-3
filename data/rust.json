@@ -505,6 +505,18 @@
   },
   {
     "category": "gui",
+    "description": "Component library and umbrella crate for desktop applications built with GPUI.",
+    "homepage": "https://crates.io/crates/gpui-kit",
+    "license": "Apache-2.0",
+    "name": "gpui-kit",
+    "official_site": "https://gpui-kit.com",
+    "repo": "https://github.com/longbridge/gpui-kit",
+    "stars": 18217,
+    "unverified_reason": null,
+    "verified": true
+  },
+  {
+    "category": "gui",
     "description": "Cross-platform GUI library inspired by Elm.",
     "homepage": "https://iced.rs",
     "license": "MIT",
