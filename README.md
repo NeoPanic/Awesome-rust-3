@@ -2,13 +2,13 @@
 
 [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Entries](https://img.shields.io/badge/entries-100-blue)](data/rust.json)
+[![Entries](https://img.shields.io/badge/entries-101-blue)](data/rust.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 A curated list of the **Rust ecosystem**: web frameworks, async runtimes, networking, databases, serialization, CLI/TUI, GUI, game engines, WebAssembly, embedded, testing, cryptography, and build tooling.
 
 > **Scope:** this list covers the Rust *ecosystem* — crates, frameworks, and developer tools. The language itself, books, courses, and tutorials are out of scope (see exclusions).
-> **Honesty policy:** every entry was checked against an official source (crates.io page, project repo, or LICENSE file) as of 2026-09-30 — **100/100 verified**. Unverified entries carry a stated reason. Licenses are copied from the project's actual license declaration; the two non-permissive entries (SurrealDB's BSL-1.1, Slint's GPL/commercial dual-license) are flagged in their sections. Machine-readable data lives in [`data/rust.json`](data/rust.json).
+> **Honesty policy:** the original 100 entries were checked against official sources as of 2026-09-30; GPUI Kit was checked against its official repository and license on 2026-10-19 — **101/101 verified**. Unverified entries carry a stated reason. Licenses are copied from the project's actual license declaration; the two non-permissive entries (SurrealDB's BSL-1.1, Slint's GPL/commercial dual-license) are flagged in their sections. Machine-readable data lives in [`data/rust.json`](data/rust.json).
 
 ## Contents
 
@@ -17,7 +17,7 @@ A curated list of the **Rust ecosystem**: web frameworks, async runtimes, networ
 - [Databases & ORMs](#databases--orms) — 8 entries
 - [Serialization](#serialization) — 7 entries
 - [CLI & TUI](#cli--tui) — 9 entries
-- [GUI](#gui) — 7 entries
+- [GUI](#gui) — 8 entries
 - [Game Engines](#game-engines) — 8 entries
 - [WebAssembly](#webassembly) — 9 entries
 - [Embedded & no_std](#embedded--no_std) — 7 entries
@@ -96,10 +96,11 @@ Argument parsing, terminal UIs, progress bars, prompts, and terminal styling for
 
 ## GUI
 
-Desktop GUI toolkits: immediate-mode, Elm-inspired, web-tech (Tauri), and native. Note: Slint is GPL-3.0-only or commercial — the only non-permissive license in this section. (7 entries)
+Desktop GUI toolkits: immediate-mode, Elm-inspired, web-tech (Tauri), and native. Note: Slint is GPL-3.0-only or commercial — the only non-permissive license in this section. (8 entries)
 
 - [egui](https://www.egui.rs) — Easy-to-use immediate-mode GUI library for native and web. *(MIT OR Apache-2.0 · ⭐ 30,771)*
 - [gpui](https://gpui.rs) — Zed's GPU-accelerated, hybrid immediate/retained-mode UI framework. *(Apache-2.0 · ⭐ 91,137)*
+- [gpui-kit](https://crates.io/crates/gpui-kit) — Component library and umbrella crate for desktop applications built with GPUI. *(Apache-2.0 · ⭐ 18,217)*
 - [iced](https://iced.rs) — Cross-platform GUI library inspired by Elm. *(MIT · ⭐ 31,631)*
 - [makepad-widgets](https://makepad.dev) — Widget library for Makepad, a cross-platform UI runtime for native and web targets. *(MIT OR Apache-2.0 · ⭐ 7,110)*
 - [slint](https://slint.rs) — Declarative GUI toolkit for desktop and embedded; GPL-3.0-only, royalty-free, or commercial license. *(GPL-3.0-only OR commercial · ⭐ 24,027)*
